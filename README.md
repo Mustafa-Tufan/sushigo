@@ -1,1 +1,15 @@
-"# sushigo" 
+This is a project for AI class.
+
+I'm developing an AI that will play a game called "Sushi Go!". https://ultraboardgames.com/sushi-go/game-rules.php
+Currently at Phase 1.
+
+Phase 1: 4 Bots plays random cards and code can determine total points and winner
+Phase 2: User can play the game via console
+Phase 3: Develope a GUI
+Phase 4: User can play the game via GUI
+Phase 5: Develope an AI
+Phase 6: Make AI undefeatable
+
+Note: I don't know how to develope an AI. I won't use machine learning (prohibited). I don't know how to code in python. I don't know how to create a GUI in python. I don't know how to create a GUI that user can interact with. I don't know shit, any help will be appreciated.
+
+But hey, i have 3 months and I'm excited to learn new things! (No i don't, its joever. FF go brrrrr)

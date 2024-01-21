@@ -4,7 +4,7 @@ import math
 card_type = {"Tempura":14, "Sashimi":14, "Dumbling":14, "1xMaki Roll":6, "2xMaki Roll":12, 
              "3xMaki Roll":8, "Salmon Nigiri":10, "Squid Nigiri":5, "Egg Nigiri":5, 
              "Pudding":10, "Wasabi":6, "Chopsticks":4,"Soya Sauce": 4}
-card_list = [];
+card_list = []
 total_round = 3
 total_turn = 8
 total_user = 4
@@ -12,33 +12,35 @@ total_user = 4
 class Card:
     def __init__(self, type, id):
         self.id = id
-        self.type = type;
+        self.type = type
     def __str__(self):
-        return f"{self.type}({self.id})"
+        return f"{self.type}  "
 
 class User:
-    def __init__(self, user_name, user_id):
-        self.user_name = user_name
+    def __init__(self, user_type, user_id):
+        self.user_type = user_type
         self.user_id = user_id
+        self.user_name = user_type + " " + str(user_id)
         self.points = [0,0,0]
         self.total_point = 0
         self.user_drawn_cards = [[] for _ in range(3)]
         self.inventory = [[] for _ in range(3)]
     def __str__(self):
-        return f"{self.user_name}({self.user_id}) - Points: {self.total_point}"
+        return f"{self.user_type}({self.user_id}) - Points: {self.total_point}"
 
 User1 = User("player",0)
-User2 = User("bot1",1)
-User3 = User("bot2",2)
-User4 = User("bot3",3)
+User2 = User("bot",1)
+User3 = User("bot",2)
+User4 = User("bot",3)
 
 users = [User1,User2,User3,User4]
 
 def throw_randomly(rounds):
     for user in users:
-        drawn_card = random.choice(user.user_drawn_cards[rounds])
-        user.user_drawn_cards[rounds].remove(drawn_card)
-        user.inventory[rounds].append(drawn_card)
+        if user.user_type == "bot":
+            drawn_card = random.choice(user.user_drawn_cards[rounds])
+            user.user_drawn_cards[rounds].remove(drawn_card)
+            user.inventory[rounds].append(drawn_card)
         
         
 def deep_copy(list1, list2):
@@ -80,9 +82,10 @@ def soya_sauce_calculator(rounds):
         nigiri_count = 1
 
         type_counts = {"Tempura": 1, "Sashimi": 1, "Dumbling": 1,
-                    "Maki Roll": maki_count, "Salmon Nigiri": nigiri_count,
-                    "Squid Nigiri": nigiri_count, "Egg Nigiri": nigiri_count, "Wasabi": 1,
-                    "Pudding": 1, "Chopsticks": 1, "Soya Sauce": 1}
+                    "1xMaki Roll": maki_count, "2xMaki Roll": maki_count, 
+                    "3xMaki Roll": maki_count, "Salmon Nigiri": nigiri_count,
+                    "Squid Nigiri": nigiri_count, "Egg Nigiri": nigiri_count, 
+                    "Wasabi": maki_count, "Pudding": 1, "Chopsticks": 1, "Soya Sauce": 1}
 
         for element in user.inventory[rounds]:
             if element.type in type_counts:
@@ -122,7 +125,7 @@ def maki_roll_calculator(rounds):
             if element.type == "3xMaki Roll":
                 maki_roll_count+=3
         maki_roll_counts.append(maki_roll_count)
-                    
+        
     players_with_max_maki_roll = 0
     players_with_2nd_max_maki_roll = 0
     max_maki_roll_count = max(maki_roll_counts)
@@ -131,8 +134,9 @@ def maki_roll_calculator(rounds):
         if maki_roll_counts[i] == max_maki_roll_count:
             players_with_max_maki_roll+=1
             maki_roll_counts[i] = -1
+    max_maki_roll_count = max(maki_roll_counts)
     for i in range(4):
-        if maki_roll_counts[i] == max(maki_roll_counts):
+        if maki_roll_counts[i] == max_maki_roll_count:
             players_with_2nd_max_maki_roll+=1
             maki_roll_counts[i] = -2
     if players_with_max_maki_roll == 1:
@@ -145,6 +149,7 @@ def maki_roll_calculator(rounds):
         for i in range(4):    
             if maki_roll_counts[i] == -1:
                 users[i].points[rounds] += math.floor(6/players_with_max_maki_roll)
+
     
 def dumbling_calculator(rounds):
     for user in users:
@@ -189,7 +194,7 @@ def wasabi_nigiri_calculator(rounds):
                 point = 3
             if user.inventory[rounds][i].type == "Egg Nigiri":
                 point = 1
-            if i>0 and user.inventory[rounds][i].type == "Wasabi":
+            if i>0 and user.inventory[rounds][i - 1].type == "Wasabi":
                 point*=3
             user.points[rounds] += point
 
@@ -225,13 +230,13 @@ def reveal_the_winner():
         if user.total_point == max(points):
             winners[user.user_name] = user.total_point
     for name, points in winners.items():
-        print(f'{name}: {points} points')
+        print(f'Winner is {name}: {points} points')
 
 for card, count in card_type.items():
     for i in range(count):
         card_list.append(Card(card, i))
         
-random.seed()
+random.seed(0)
 drawn_cards = random.sample(card_list, total_turn*total_round*total_user)
 
 for user in users:
@@ -244,9 +249,29 @@ while (rounds < total_round):
     turn = 0
     while (turn < total_turn):
         throw_randomly(rounds)
+        print(*users[0].user_drawn_cards[rounds])
+        card = int(input("Pick a card between 1 and 8: "))
+        drawn_card = users[0].user_drawn_cards[rounds][card - 1]
+        users[0].user_drawn_cards[rounds].remove(drawn_card)
+        users[0].inventory[rounds].append(drawn_card)
         swap_the_cards(rounds)
         turn+=1
     rounds+=1
 
-calculate_points()   
+print()
+calculate_points()
 reveal_the_winner()
+print()
+
+'''
+for i in range(3):
+    for user in users:
+        print(*user.inventory[i])
+        print(user.points[i])
+        print("---------")
+    print("******************")
+print(users[0].total_point)
+print(users[1].total_point)
+print(users[2].total_point)
+print(users[3].total_point)
+'''

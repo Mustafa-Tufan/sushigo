@@ -71,6 +71,11 @@ def calculate_points():
         user.total_point = sum(user.points)
     pudding_calculator()
     
+# Counts total colors of users deck in a given round. To do that, it uses a dictionary with all values set to 1
+# Values are different for nigiris and maki rolls because they count as single color
+# Case 1: Person with soya souce has most colors    (2nd and 3rd loop)
+# Case 2: Person with soya souce not has most colors    (1st loop)
+# Case 3: More than one people share most colors and both have soya souce   (2nd and 3rd loop)
 def soya_sauce_calculator(rounds):
     color_counts = []
     have_soya_sauce = []
@@ -102,6 +107,7 @@ def soya_sauce_calculator(rounds):
 
         color_counts.append(color_count)
         have_soya_sauce.append(has_soya_sauce)
+        
     players_with_max_color = 0
     for i in range(4):
         if (color_counts[i] == max(color_counts)) and (have_soya_sauce[i] == 0):
@@ -113,6 +119,9 @@ def soya_sauce_calculator(rounds):
         if (color_counts[i] == max(color_counts)) and (have_soya_sauce[i] >= 1):
             users[i].points[rounds] += math.floor(4/players_with_max_color)           
     
+# Calculates total maki rolls of an user in round (rounds), then it holds them in a list
+# Counts how many #1 players and #2 players. Changes values on the list to make things easier
+# My senses says i should revert the changes in the list after method ends but why?  
 def maki_roll_calculator(rounds):
     maki_roll_counts = []
     for user in users:
@@ -150,7 +159,6 @@ def maki_roll_calculator(rounds):
             if maki_roll_counts[i] == -1:
                 users[i].points[rounds] += math.floor(6/players_with_max_maki_roll)
 
-    
 def dumbling_calculator(rounds):
     for user in users:
         dumbling_count = 0
@@ -168,6 +176,7 @@ def dumbling_calculator(rounds):
         if dumbling_count >= 5:
             user.points[rounds] += 15
     
+# 3 Sashimi = 10 points
 def sashimi_calculator(rounds):
     for user in users:
         sashimi_count = 0
@@ -176,6 +185,7 @@ def sashimi_calculator(rounds):
                 sashimi_count+=1
         user.points[rounds] += 10*math.floor(sashimi_count/3)      
 
+# 2 Tempura = 5 points
 def tempura_calculator(rounds):
     for user in users:
         tempura_count = 0
@@ -183,7 +193,8 @@ def tempura_calculator(rounds):
             if element.type == "Tempura":
                 tempura_count+=1
         user.points[rounds] += 5*math.floor(tempura_count/2) 
-    
+
+# Searches for nigiri in users inventory, if it finds one, it checks if its above a wasabi
 def wasabi_nigiri_calculator(rounds):
     for user in users:
         for i in range(8):
@@ -198,7 +209,9 @@ def wasabi_nigiri_calculator(rounds):
                 point*=3
             user.points[rounds] += point
 
-def pudding_calculator():
+# Sums all puddings that user has in their all inventories and appends that to a list
+# Calculates how many players have max/min puddings and distributes points according to that
+def pudding_calculator(): 
     pudding_counts = []
     for user in users:
         pudding_count = 0
@@ -236,7 +249,7 @@ for card, count in card_type.items():
     for i in range(count):
         card_list.append(Card(card, i))
         
-random.seed(0)
+random.seed(1)
 drawn_cards = random.sample(card_list, total_turn*total_round*total_user)
 
 for user in users:
@@ -250,7 +263,19 @@ while (rounds < total_round):
     while (turn < total_turn):
         throw_randomly(rounds)
         print(*users[0].user_drawn_cards[rounds])
-        card = int(input("Pick a card between 1 and 8: "))
+        print("Bot 1 card on top: " , users[1].inventory[rounds][len(users[1].inventory[rounds]) - 1])
+        print("Bot 2 card on top: " , users[2].inventory[rounds][len(users[2].inventory[rounds]) - 1])
+        print("Bot 3 card on top: " , users[3].inventory[rounds][len(users[3].inventory[rounds]) - 1])
+        while True:
+            try:
+                card = int(input("Pick a card between 1 and 8: "))
+                if 1 <= card <= 8:
+                    break
+                else: #if user chooses a number outside of the given range
+                    print("Number must be between 1 and 8. Please try again.")
+            except ValueError: #if user enters a floating variable
+                print("Invalid input. Please enter a valid number.")
+      
         drawn_card = users[0].user_drawn_cards[rounds][card - 1]
         users[0].user_drawn_cards[rounds].remove(drawn_card)
         users[0].inventory[rounds].append(drawn_card)
@@ -263,7 +288,6 @@ calculate_points()
 reveal_the_winner()
 print()
 
-'''
 for i in range(3):
     for user in users:
         print(*user.inventory[i])
@@ -274,4 +298,3 @@ print(users[0].total_point)
 print(users[1].total_point)
 print(users[2].total_point)
 print(users[3].total_point)
-'''

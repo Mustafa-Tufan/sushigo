@@ -269,7 +269,7 @@ while (rounds < total_round):
         while True:
             try:
                 card = int(input("Pick a card between 1 and 8: "))
-                if 1 <= card <= 8:
+                if 1 <= card <= len(users[0].user_drawn_cards[rounds]):
                     break
                 else: #if user chooses a number outside of the given range
                     print("Number must be between 1 and 8. Please try again.")
@@ -288,6 +288,7 @@ calculate_points()
 reveal_the_winner()
 print()
 
+'''
 for i in range(3):
     for user in users:
         print(*user.inventory[i])
@@ -298,3 +299,4 @@ print(users[0].total_point)
 print(users[1].total_point)
 print(users[2].total_point)
 print(users[3].total_point)
+'''

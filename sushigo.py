@@ -262,18 +262,26 @@ while (rounds < total_round):
     turn = 0
     while (turn < total_turn):
         throw_randomly(rounds)
+        print("")
         print(*users[0].user_drawn_cards[rounds])
         print("Bot 1 card on top: " , users[1].inventory[rounds][len(users[1].inventory[rounds]) - 1])
         print("Bot 2 card on top: " , users[2].inventory[rounds][len(users[2].inventory[rounds]) - 1])
         print("Bot 3 card on top: " , users[3].inventory[rounds][len(users[3].inventory[rounds]) - 1])
+        print("")
         while True:
             try:
-                card = int(input("Pick a card between 1 and 8: "))
-                if 1 <= card <= len(users[0].user_drawn_cards[rounds]):
+                # Skips last round because you have only 1 card to throw
+                if len(users[0].user_drawn_cards[rounds]) == 1:
+                    card = 1
                     break
-                else: #if user chooses a number outside of the given range
-                    print("Number must be between 1 and 8. Please try again.")
-            except ValueError: #if user enters a floating variable
+                # If user has more than 1 card in his deck
+                else:
+                    card = int(input(f"Pick a card between 1 and {len(users[0].user_drawn_cards[rounds])}: "))
+                    if 1 <= card <= len(users[0].user_drawn_cards[rounds]):
+                        break
+                    else: # if user chooses a number outside of the given range
+                        print("Number must be between 1 and 8. Please try again.")
+            except ValueError: # if user enters a floating variable
                 print("Invalid input. Please enter a valid number.")
       
         drawn_card = users[0].user_drawn_cards[rounds][card - 1]

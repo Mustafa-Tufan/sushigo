@@ -36,11 +36,11 @@ class GUI:
         self.clock = pygame.time.Clock()
         self.running = True
         self.font = pygame.font.Font(None, 36)
-        '''
+        
         mixer.init()
         mixer.music.load('sushigo/autism.ogg')
         mixer.music.play()
-        '''
+        
         
     def handle_events(self):
         for event in pygame.event.get():
@@ -75,8 +75,10 @@ class GUI:
         if len(game.users) == 3: self.row, self.col, self.type = 3, 3, 1
         if len(game.users) == 4: self.row, self.col, self.type = 2, 4, 2
         if len(game.users) == 5: self.row, self.col, self.type = 3, 3, 3
+            
         player_positions = self.calculate_positions(self.center, self.table_radius, len(game.users))
         front_positions = self.calculate_positions(self.center, self.table_radius/3, len(game.users))
+        
         for point in player_positions:
             #pygame.draw.circle(self.screen, (255,0,0), point, 50)
             for row in range(self.row):
@@ -84,6 +86,7 @@ class GUI:
                     final_rect = pygame.Rect(point[0] + self.position_diff_x[self.type][col][0], 
                                       point[1] + self.position_diff_y[self.type][row][1], 45, 60)
                     pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
+                    
         for point in front_positions:
             # WHY YOU CANT ACCEPT A TUPLE AS PARAMETER?? ACOUSTIC METHOD ?!?!?!!?
             #pygame.draw.circle(self.screen, (255,0,0), point, 20)

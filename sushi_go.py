@@ -34,6 +34,7 @@ class User:
     def __str__(self):
         return f"{self.user_type}({self.user_id}) - Points: {self.total_point}"
     
+    # Spaghetti codding yippie!!!!!! (Too lazy to fix it)
     def throw_card(self, rounds):
         if self.user_type == "bot":
             drawn_card = random.choice(self.user_drawn_cards[rounds])
@@ -66,7 +67,7 @@ class Game:
         self.prepare_game()        
     
     def prepare_game(self):
-        print("Sushi Go! can be played with 2-5 people\n")
+        print("\nSushi Go! can be played with 2-5 people\n")
         while True:
             try:
                 player_count = int(input("Enter player count: "))
@@ -87,11 +88,7 @@ class Game:
             else:
                 self.users.append(User("bot", f"bot {i}", i))
         
-        if self.total_user == 2: self.total_turn = 10
-        elif self.total_user == 3: self.total_turn = 9
-        elif self.total_user == 4: self.total_turn = 8
-        elif self.total_user == 5: self.total_turn = 7
-        
+        self.total_turn = 12 - self.total_user
         self.total_round = 3
         
         for card, count in card_type.items():
@@ -108,6 +105,15 @@ class Game:
                     
         print("\nType q anytime to quit") 
 
+    def play(self):
+        for i in range(self.total_round):
+            self.play_a_round(i)
+        self.end_the_game()
+
+    def play_a_round(self,rounds):
+        for j in range(self.total_turn):
+            self.play_a_turn(rounds)
+                
     def play_a_turn(self, rounds):
         for user in self.users:
             if user.user_type == "player":
@@ -301,6 +307,8 @@ class Game:
                 users[i].total_point -= math.floor(6/players_with_min_pudding)    
     '''
     
+    # Game doesn't ends btw, you have to close the gui to close game
+    # I don't know how to fix it nor i care
     def end_the_game(self):
         for i in range(3):
             #self.soya_sauce_calculator(i, users)
@@ -323,3 +331,4 @@ class Game:
         for name, points in winners.items():
             print(f'Winner is {name}: {points} points')
         print()
+        sys.exit()

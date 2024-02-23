@@ -1,12 +1,18 @@
-from sushi_go import *
+from sushi_go import Game
+from gui import GUI
+import threading
 
 def main():
     game = Game()
+    gui = GUI()
     
-    for i in range(game.total_round):
-        for j in range(game.total_turn):
-            game.play_a_turn(i)
-    game.end_the_game()
-            
+    def run_game():
+        game.play()
+
+    game_thread = threading.Thread(target=run_game)
+    game_thread.start()
+    gui.run(game)
+    game_thread.join()
+      
 if __name__ == "__main__":
     main()

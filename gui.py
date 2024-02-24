@@ -1,3 +1,9 @@
+'''
+Yapılcaklar:
+
+-Siyah kutulara oyuncunun sahip olduğu kartları koy
+-Kartlara tıklanınca o kartı atsın
+'''
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
@@ -35,12 +41,12 @@ class GUI:
         pygame.display.set_caption('Sushi Go! GUI')
         self.clock = pygame.time.Clock()
         self.running = True
-        self.font = pygame.font.Font(None, 36)
-        
+        self.font = pygame.font.Font(None, 60)
+        '''
         mixer.init()
         mixer.music.load('sushigo/autism.ogg')
         mixer.music.play()
-        
+        '''
         
     def handle_events(self):
         for event in pygame.event.get():
@@ -50,21 +56,40 @@ class GUI:
     def update_display(self):
         pygame.display.flip()
         self.clock.tick(60)
-        
-    # This is where magic happens, i have no idea how it works but it somehow partitions the circle perfectly    
+    
+    # Damn i never thought i would use my MAT-102 knowledge on anywhere but here we are. Hüseyin Merdan <3
     def calculate_positions(self, center, radius, num_positions):
         positions = []
         angle_increment = 2 * math.pi / num_positions
+        
         for i in range(num_positions):
             angle = i * angle_increment + math.pi/2
             x = center[0] + int(radius * math.cos(angle))
             y = center[1] + int(radius * math.sin(angle))
             positions.append((x, y))
+        
         return positions
+
+    def load_images(self):
+        images = [] 
+        
+        images.append(pygame.image.load('sushigo/Card_Images/Tempura.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Sashimi.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Dumbling.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/1xMaki Roll.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/2xMaki Roll.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/3xMaki Roll.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Salmon Nigiri.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Squid Nigiri.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Egg Nigiri.png'))
+        images.append(pygame.image.load('sushigo/Card_Images/Wasabi.png'))
+        
+        return images
 
     def draw_game(self, game):
         self.create_table()
         self.create_cards(game)
+        self.fill_cards(game)
 
     def create_table(self):
         self.screen.fill((255,255,153))
@@ -75,24 +100,47 @@ class GUI:
         if len(game.users) == 3: self.row, self.col, self.type = 3, 3, 1
         if len(game.users) == 4: self.row, self.col, self.type = 2, 4, 2
         if len(game.users) == 5: self.row, self.col, self.type = 3, 3, 3
-            
+        
         player_positions = self.calculate_positions(self.center, self.table_radius, len(game.users))
         front_positions = self.calculate_positions(self.center, self.table_radius/3, len(game.users))
+        
+        if len(game.users) in (3,5): diff = -160
+        else: diff = -100
         
         for point in player_positions:
             #pygame.draw.circle(self.screen, (255,0,0), point, 50)
             for row in range(self.row):
                 for col in range(self.col):
-                    final_rect = pygame.Rect(point[0] + self.position_diff_x[self.type][col][0], 
-                                      point[1] + self.position_diff_y[self.type][row][1], 45, 60)
+                    left = point[0] + self.position_diff_x[self.type][col][0]
+                    top = point[1] + self.position_diff_y[self.type][row][1]
+                    final_rect = pygame.Rect(left, top, 45, 60)
                     pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
-                    
+                    game.users[player_positions.index(point)].card_positions.append((left, top))
+                
+            text_surface = self.font.render(game.users[player_positions.index(point)].user_name, False, (255, 0, 0))
+            self.screen.blit(text_surface, (point[0] - 60 , point[1] + diff))
+
         for point in front_positions:
             # WHY YOU CANT ACCEPT A TUPLE AS PARAMETER?? ACOUSTIC METHOD ?!?!?!!?
             #pygame.draw.circle(self.screen, (255,0,0), point, 20)
-            final_rect = pygame.Rect(point[0] - 22.5, point[1] - 30, 45, 60)
+            left = point[0] - 22.5
+            top = point[1] - 30
+            final_rect = pygame.Rect(left, top, 45, 60)
             pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
+            game.users[front_positions.index(point)].front_position = (left, top)
 
+    def fill_cards(self, game):
+        images = self.load_images()
+        for user in game.users:
+            place_index = 0
+            for card in user.user_drawn_cards[game.current_round]:
+                self.screen.blit(images[card.index], user.card_positions[place_index])
+                place_index += 1
+                
+            if len(user.inventory[game.current_round]) != 0:
+                top_card = user.inventory[game.current_round][len(user.inventory[game.current_round]) - 1]
+                self.screen.blit(images[top_card.index], user.front_position)
+            
     def run(self, game):
         while self.running:
             self.handle_events()

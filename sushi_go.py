@@ -15,21 +15,24 @@ card_type = {"Tempura":16, "Sashimi":16, "Dumbling":16, "1xMaki Roll":8, "2xMaki
 card_list = []
 
 class Card:
-    def __init__(self, type, id):
-        self.id = id
-        self.type = type
+    def __init__(self, type, id, index):
+        self.id = id                        # Why do i have this?
+        self.type = type                    # ToString related
+        self.index = index                  # GUI related
     def __str__(self):
         return f"{self.type}  "
 
 class User:
     def __init__(self, user_type, user_name, user_id):
-        self.user_type = user_type
+        self.user_type = user_type                          
         self.user_id = user_id
         self.user_name = user_name
         self.points = [0,0,0]
         self.total_point = 0
         self.user_drawn_cards = [[] for _ in range(3)]
         self.inventory = [[] for _ in range(3)]
+        self.card_positions = []
+        self.front_position = (0,0)
         
     def __str__(self):
         return f"{self.user_type}({self.user_id}) - Points: {self.total_point}"
@@ -62,6 +65,8 @@ class Game:
     total_round = 0
     total_turn = 0
     total_user = 0
+    current_round = 0
+    current_turn = 0
     
     def __init__(self):
         self.prepare_game()        
@@ -91,9 +96,11 @@ class Game:
         self.total_turn = 12 - self.total_user
         self.total_round = 3
         
+        index = 0
         for card, count in card_type.items():
             for i in range(count):
-                card_list.append(Card(card, i))
+                card_list.append(Card(card, i, index))
+            index += 1
         
         #random.seed(1)
         drawn_cards = random.sample(card_list, self.total_turn * self.total_round * self.total_user)
@@ -107,11 +114,14 @@ class Game:
 
     def play(self):
         for i in range(self.total_round):
+            self.current_round = i
             self.play_a_round(i)
+            self.current_turn = 0
         self.end_the_game()
 
     def play_a_round(self,rounds):
         for j in range(self.total_turn):
+            self.current_turn = j
             self.play_a_turn(rounds)
                 
     def play_a_turn(self, rounds):
@@ -121,6 +131,7 @@ class Game:
             user.throw_card(rounds)
         self.give_information(rounds)
         self.swap_the_cards(rounds)
+        self.current_turn += 1
             
     def give_information(self, rounds):
         print("")
@@ -133,13 +144,22 @@ class Game:
         
     def swap_the_cards(self, rounds):
         temp = []
+        self.deep_copy(temp, self.users[len(self.users) - 1].user_drawn_cards[rounds])
+        self.users[len(self.users) - 1].user_drawn_cards[rounds] = []
+        for i in range(len(self.users) - 1):
+            self.deep_copy(self.users[len(self.users) - 1 - i].user_drawn_cards[rounds], self.users[len(self.users) - 2 - i].user_drawn_cards[rounds])
+            self.users[len(self.users) - 1 - i - 1].user_drawn_cards[rounds] = []
+        self.deep_copy(self.users[0].user_drawn_cards[rounds], temp)
+        '''
+        temp = []
         self.deep_copy(temp, self.users[0].user_drawn_cards[rounds])
         self.users[0].user_drawn_cards[rounds] = []
         for i in range(len(self.users) - 1):
             self.deep_copy(self.users[i].user_drawn_cards[rounds], self.users[i + 1].user_drawn_cards[rounds])
             self.users[i + 1].user_drawn_cards[rounds] = []
         self.deep_copy(self.users[len(self.users) - 1].user_drawn_cards[rounds], temp)
-
+        '''
+        
     # Counts total colors of users deck in a given round. To do that, it uses a dictionary with all values set to 1
     # Values are different for nigiris and maki rolls because they count as single color
     # Case 1: Person with soya souce has most colors    (2nd and 3rd loop)

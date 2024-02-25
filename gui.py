@@ -1,13 +1,8 @@
-'''
-Yapılcaklar:
-
--Siyah kutulara oyuncunun sahip olduğu kartları koy
--Kartlara tıklanınca o kartı atsın
-'''
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 import math
+import sys
 from pygame import mixer
 
 class GUI:
@@ -35,6 +30,9 @@ class GUI:
     col = 4
     type = 2
     
+    card_width = 45
+    card_height = 60
+    
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -42,16 +40,22 @@ class GUI:
         self.clock = pygame.time.Clock()
         self.running = True
         self.font = pygame.font.Font(None, 60)
-        '''
+        
         mixer.init()
         mixer.music.load('sushigo/autism.ogg')
         mixer.music.play()
-        '''
         
-    def handle_events(self):
+        
+    def handle_events(self, game):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                game.users[game.user_turn].quit_game = 1
                 self.running = False
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    game.users[game.user_turn].clicked_card = self.clicked_card(mouse_x, mouse_y, game)
 
     def update_display(self):
         pygame.display.flip()
@@ -109,14 +113,18 @@ class GUI:
         
         for point in player_positions:
             #pygame.draw.circle(self.screen, (255,0,0), point, 50)
+            game.users[player_positions.index(point)].card_positions = []
+            iteration_count = 0
             for row in range(self.row):
                 for col in range(self.col):
                     left = point[0] + self.position_diff_x[self.type][col][0]
                     top = point[1] + self.position_diff_y[self.type][row][1]
-                    final_rect = pygame.Rect(left, top, 45, 60)
+                    final_rect = pygame.Rect(left, top, self.card_width, self.card_height)
                     pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
-                    game.users[player_positions.index(point)].card_positions.append((left, top))
-                
+                    user = game.users[player_positions.index(point)]
+                    if iteration_count < len(user.user_drawn_cards[game.current_round]):
+                        user.card_positions.append((left, top))
+                    iteration_count += 1                       
             text_surface = self.font.render(game.users[player_positions.index(point)].user_name, False, (255, 0, 0))
             self.screen.blit(text_surface, (point[0] - 60 , point[1] + diff))
 
@@ -125,26 +133,33 @@ class GUI:
             #pygame.draw.circle(self.screen, (255,0,0), point, 20)
             left = point[0] - 22.5
             top = point[1] - 30
-            final_rect = pygame.Rect(left, top, 45, 60)
+            final_rect = pygame.Rect(left, top, self.card_width, self.card_height)
             pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
             game.users[front_positions.index(point)].front_position = (left, top)
 
     def fill_cards(self, game):
         images = self.load_images()
         for user in game.users:
-            place_index = 0
-            for card in user.user_drawn_cards[game.current_round]:
-                self.screen.blit(images[card.index], user.card_positions[place_index])
-                place_index += 1
-                
+            for card, position in zip(user.user_drawn_cards[game.current_round], user.card_positions):
+                self.screen.blit(images[card.index], position)
+        
             if len(user.inventory[game.current_round]) != 0:
                 top_card = user.inventory[game.current_round][len(user.inventory[game.current_round]) - 1]
                 self.screen.blit(images[top_card.index], user.front_position)
-            
+    
+    def clicked_card(self, x, y, game):
+        for positions in game.users[game.user_turn].card_positions:
+            rect_x = positions[0]
+            rect_y = positions[1]    
+            if (rect_x <= x <= rect_x + self.card_width and rect_y <= y <= rect_y + self.card_height):
+                return game.users[game.user_turn].card_positions.index(positions) + 1
+        return 0
+        
     def run(self, game):
         while self.running:
-            self.handle_events()
+            self.handle_events(game)
             self.screen.fill((255, 255, 255))
             self.draw_game(game)
             self.update_display()
         pygame.quit()
+        return

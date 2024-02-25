@@ -1,8 +1,7 @@
 import random
 import math
 import sys
-
-from psutil import users
+from gui import GUI
 
 '''
 card_type = {"Tempura":14, "Sashimi":14, "Dumbling":14, "1xMaki Roll":6, "2xMaki Roll":12, 
@@ -23,6 +22,8 @@ class Card:
         return f"{self.type}  "
 
 class User:
+    clicked_card = 0
+    quit_game = 0
     def __init__(self, user_type, user_name, user_id):
         self.user_type = user_type                          
         self.user_id = user_id
@@ -43,7 +44,8 @@ class User:
             drawn_card = random.choice(self.user_drawn_cards[rounds])
             self.user_drawn_cards[rounds].remove(drawn_card)
             self.inventory[rounds].append(drawn_card)
-            return   
+            return
+        '''
         while True:
             try:
                 card = input(f"Pick a card between 1 and {len(self.user_drawn_cards[rounds])}: ")
@@ -56,10 +58,16 @@ class User:
                     print(f"Number must be between 1 and {len(self.user_drawn_cards[rounds])}. Please try again.")
             except ValueError: # if user enters a floating variable
                 print("Invalid input. Please enter a valid number.")
+        '''
+        while (self.clicked_card == 0):
+            if (self.quit_game == 1): 
+                sys.exit()
+            card = self.clicked_card
         drawn_card = self.user_drawn_cards[rounds][int(card) - 1]
         self.user_drawn_cards[rounds].remove(drawn_card)
         self.inventory[rounds].append(drawn_card)
-
+        self.clicked_card = 0
+        
 class Game:
     users = []
     total_round = 0
@@ -67,6 +75,8 @@ class Game:
     total_user = 0
     current_round = 0
     current_turn = 0
+    user_turn = 0
+    quit_game = 0
     
     def __init__(self):
         self.prepare_game()        
@@ -129,9 +139,11 @@ class Game:
             if user.user_type == "player":
                 print("\n",*user.user_drawn_cards[rounds],"\n")
             user.throw_card(rounds)
+            self.user_turn += 1
         self.give_information(rounds)
         self.swap_the_cards(rounds)
         self.current_turn += 1
+        self.user_turn = 0
             
     def give_information(self, rounds):
         print("")
@@ -351,4 +363,7 @@ class Game:
         for name, points in winners.items():
             print(f'Winner is {name}: {points} points')
         print()
+        sys.exit()
+
+    def quit(self):
         sys.exit()

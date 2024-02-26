@@ -2,6 +2,8 @@ import random
 import math
 import sys
 from gui import GUI
+from anytree import Node, RenderTree
+from anytree.exporter import UniqueDotExporter
 
 '''
 card_type = {"Tempura":14, "Sashimi":14, "Dumbling":14, "1xMaki Roll":6, "2xMaki Roll":12, 
@@ -11,7 +13,11 @@ card_type = {"Tempura":14, "Sashimi":14, "Dumbling":14, "1xMaki Roll":6, "2xMaki
 card_type = {"Tempura":16, "Sashimi":16, "Dumbling":16, "1xMaki Roll":8, "2xMaki Roll":15, 
              "3xMaki Roll":10, "Salmon Nigiri":12, "Squid Nigiri":8, "Egg Nigiri":8, 
              "Wasabi":6}
+
 card_list = []
+
+unique_card_list = ["Tempura", "Sashimi", "Dumbling", "1xMaki Roll", "2xMaki Roll", 
+             "3xMaki Roll", "Salmon Nigiri", "Squid Nigiri", "Egg Nigiri", "Wasabi"]
 
 class Card:
     def __init__(self, type, id, index):
@@ -77,9 +83,12 @@ class Game:
     current_turn = 0
     user_turn = 0
     quit_game = 0
+    ended = 0
     
     def __init__(self):
-        self.prepare_game()        
+        self.prepare_game()
+        mc = Monte_Carlo()
+        mc.create_monte_carle_tree(self)
     
     def prepare_game(self):
         print("\nSushi Go! can be played with 2-5 people\n")
@@ -88,9 +97,7 @@ class Game:
                 player_count = int(input("Enter player count: "))
                 bot_count = int(input("Enter bot count: "))
                 self.total_user = player_count + bot_count
-                if player_count == 0:
-                    raise ValueError("Player counts must be at least 1.")
-                elif not (2 <= self.total_user <= 5):
+                if not (2 <= self.total_user <= 5):
                     raise ValueError("Total player and bot count must be between 2 and 5.")
                 break  # Valid counts, so exit the loop
             
@@ -162,15 +169,6 @@ class Game:
             self.deep_copy(self.users[len(self.users) - 1 - i].user_drawn_cards[rounds], self.users[len(self.users) - 2 - i].user_drawn_cards[rounds])
             self.users[len(self.users) - 1 - i - 1].user_drawn_cards[rounds] = []
         self.deep_copy(self.users[0].user_drawn_cards[rounds], temp)
-        '''
-        temp = []
-        self.deep_copy(temp, self.users[0].user_drawn_cards[rounds])
-        self.users[0].user_drawn_cards[rounds] = []
-        for i in range(len(self.users) - 1):
-            self.deep_copy(self.users[i].user_drawn_cards[rounds], self.users[i + 1].user_drawn_cards[rounds])
-            self.users[i + 1].user_drawn_cards[rounds] = []
-        self.deep_copy(self.users[len(self.users) - 1].user_drawn_cards[rounds], temp)
-        '''
         
     # Counts total colors of users deck in a given round. To do that, it uses a dictionary with all values set to 1
     # Values are different for nigiris and maki rolls because they count as single color
@@ -356,14 +354,107 @@ class Game:
         print()
         winners = {}
         points = [user.total_point for user in self.users]
+        win_messages = ""
         
         for user in self.users:
             if user.total_point == max(points):
                 winners[user.user_name] = user.total_point
         for name, points in winners.items():
-            print(f'Winner is {name}: {points} points')
+            win_message = f'Winner is {name}: {points} points'
+            print(win_message)
+            win_messages += win_message
+            
         print()
-        sys.exit()
+        self.ended = 1
+        self.end_message = win_messages
 
     def quit(self):
         sys.exit()
+    
+'''
+İşte başlıyoruz, projenin en zorlu kısmı
+Monte Carlo metodu, n'lik bir array açar (n=1.000.000)
+Daha sonra sürekli sushi go oyununu 3 tur oynar
+Bunun için ise play_a_turn metodunu 3 defa çağırır, daha sonra oyunu yeniler
+Bu sırada elde ettiği kartları arrayin içine koyar
+Daha sonra arrayde hangi diziden kaç adet olduğuna bakılıp olasılıkları hesaplanır
+Bir evaluation fonksiyonuyla bu değerin bir lineer kombinasyonu ile en iyi seçenek bulunur
+Bot, sürekli o seçeneğe gitmeye çalışır
+Her turda bunu tekrarlamamak için arrayi bir ağaç veri yapısına dönüştürürüz
+4 kişilik oyunda 3 derinlikli olan bu ağaçta her bir nodenin 10 çocuğu vardır
+Botun sahip olduğu kartlardan en iyi sonuca sahip düğüme doğru ilerler
+'''
+
+class Monte_Carlo:
+    def create_monte_carle_tree(self, game):   
+        n = 10000
+        states = []
+        probabilities = {}
+        
+        for i in range(n):
+            state = tuple(random.choices(unique_card_list, k=len(game.users)-1))
+            states.append(state)
+        
+        for state in states:
+            probabilities[state] = states.count(state) / n
+        
+        for key, value in probabilities.items():
+            print(key[0], key[1], key[2], ':', value)
+            
+        root = self.create_choices_tree()
+        
+        for pre, fill, node in RenderTree(root):
+            print("%s%s" % (pre, node.foo))
+
+        strategies = {}
+        for key, value in probabilities.items():
+            strategies[key] = value + 0.1 * self.evaluate(key)
+            
+        for key, value in strategies.items():
+            print(key[0], key[1], key[2], ':', value)
+        
+        self.update_leaf_foo(root, strategies)
+        for pre, fill, node in RenderTree(root):
+            print("%s%s" % (pre, node.foo))
+        self.update_node_foo(root)
+        #print("Convert to tree")
+    
+    # Currently works with 4 players
+    def create_choices_tree(self):
+        root = Node("", foo = 0)
+        for element in unique_card_list:
+            node1 = Node(element, parent=root, foo=0)
+            for element in unique_card_list:
+                node2 = Node(element, parent=node1, foo=0)
+                for element in unique_card_list:
+                    Node(element, parent=node2, foo=0)
+        return root
+    
+    # I clearly have no idea how to evaluate a state (Skill issue)
+    def evaluate(self, state):
+        value = 0
+        for card in state:
+            if card == "Tempura": value += 2.5
+            if card == "Sashimi": value += 10/3
+            if card == "Dumbling": value += 2
+            if card == "1xMaki Roll": value += 0.5
+            if card == "2xMaki Roll": value += 1
+            if card == "3xMaki Roll": value += 1.5
+            if card == "Salmon Nigiri": value += 2
+            if card == "Squid Nigiri": value += 3
+            if card == "Egg Nigiri": value += 1
+            if card == "Wasabi": value += 3
+        return value
+    
+    def update_leaf_foo(self, root, strategies): 
+        for key, value in strategies.items():
+            cur_node = root
+            for element in key:
+                cur_node = cur_node.children[element] #TODO Integer değer istiyo ama ben string veriyom
+            cur_node.foo = value
+    
+    def update_node_foo(self, root):
+        pass
+    
+class Maximize:
+    pass

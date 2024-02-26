@@ -41,10 +41,11 @@ class GUI:
         self.running = True
         self.font = pygame.font.Font(None, 60)
         
+        '''
         mixer.init()
         mixer.music.load('sushigo/autism.ogg')
         mixer.music.play()
-        
+        '''
         
     def handle_events(self, game):
         for event in pygame.event.get():
@@ -91,6 +92,7 @@ class GUI:
         return images
 
     def draw_game(self, game):
+        self.screen.fill((255, 255, 255))
         self.create_table()
         self.create_cards(game)
         self.fill_cards(game)
@@ -119,11 +121,13 @@ class GUI:
                 for col in range(self.col):
                     left = point[0] + self.position_diff_x[self.type][col][0]
                     top = point[1] + self.position_diff_y[self.type][row][1]
+                    
                     final_rect = pygame.Rect(left, top, self.card_width, self.card_height)
                     pygame.draw.rect(self.screen, (0,0,0,0), final_rect)
                     user = game.users[player_positions.index(point)]
                     if iteration_count < len(user.user_drawn_cards[game.current_round]):
                         user.card_positions.append((left, top))
+                        
                     iteration_count += 1                       
             text_surface = self.font.render(game.users[player_positions.index(point)].user_name, False, (255, 0, 0))
             self.screen.blit(text_surface, (point[0] - 60 , point[1] + diff))
@@ -154,12 +158,18 @@ class GUI:
             if (rect_x <= x <= rect_x + self.card_width and rect_y <= y <= rect_y + self.card_height):
                 return game.users[game.user_turn].card_positions.index(positions) + 1
         return 0
+    
+    def winner_screen(self, game):
+        self.screen.fill((0,0,0))
+        end_message = self.font.render(game.end_message, False, (255, 255, 255))
+        self.screen.blit(end_message, (0,0))
+        pygame.display.update()
         
     def run(self, game):
         while self.running:
             self.handle_events(game)
-            self.screen.fill((255, 255, 255))
-            self.draw_game(game)
-            self.update_display()
+            if (game.ended == 0): self.draw_game(game)
+            else: self.winner_screen(game)
+            self.update_display() 
         pygame.quit()
         return

@@ -1,7 +1,7 @@
 # This is a project for AI class.
 
 I'm developing an AI that will play a game called "Sushi Go!". https://ultraboardgames.com/sushi-go/game-rules.php
-Currently at Phase 5.
+Finished (i think)
 
 | Phase | Description |
 |-:|---------------|

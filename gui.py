@@ -41,12 +41,6 @@ class GUI:
         self.running = True
         self.font = pygame.font.Font(None, 60)
         
-        '''
-        mixer.init()
-        mixer.music.load('sushigo/autism.ogg')
-        mixer.music.play()
-        '''
-        
     def handle_events(self, game):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -114,7 +108,6 @@ class GUI:
         else: diff = -100
         
         for point in player_positions:
-            #pygame.draw.circle(self.screen, (255,0,0), point, 50)
             game.users[player_positions.index(point)].card_positions = []
             iteration_count = 0
             for row in range(self.row):
@@ -133,8 +126,6 @@ class GUI:
             self.screen.blit(text_surface, (point[0] - 60 , point[1] + diff))
 
         for point in front_positions:
-            # WHY YOU CANT ACCEPT A TUPLE AS PARAMETER?? ACOUSTIC METHOD ?!?!?!!?
-            #pygame.draw.circle(self.screen, (255,0,0), point, 20)
             left = point[0] - 22.5
             top = point[1] - 30
             final_rect = pygame.Rect(left, top, self.card_width, self.card_height)
@@ -162,7 +153,15 @@ class GUI:
     def winner_screen(self, game):
         self.screen.fill((0,0,0))
         end_message = self.font.render(game.end_message, False, (255, 255, 255))
-        self.screen.blit(end_message, (0,0))
+        First_place = self.font.render(game.First_place, False, (255, 215, 0))
+        Second_place = self.font.render(game.Second_place, False, (192, 192, 192))
+        Third_place = self.font.render(game.Third_place, False, (205, 127, 50))
+        Forth_place = self.font.render(game.Forth_place, False, (255, 0, 0))
+        self.screen.blit(end_message, (200,100))
+        self.screen.blit(First_place, (200,300))
+        self.screen.blit(Second_place, (200,400))
+        self.screen.blit(Third_place, (200,500))
+        self.screen.blit(Forth_place, (200,600))
         pygame.display.update()
         
     def run(self, game):

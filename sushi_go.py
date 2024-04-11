@@ -147,7 +147,7 @@ class Game:
         
         for i in range(self.total_user):
             if i < player_count:
-                self.users.append(User("player", input(f"Enter player {i}'s name: "), i, self))
+                self.users.append(User("player", input(f"Enter player {i + 1}'s name: "), i, self))
             else:
                 self.users.append(User("bot", f"bot {i}", i, self))
         
@@ -472,7 +472,7 @@ class Game:
     
     # Creates Monte Carlo tree
     def create_monte_carle_tree(self): 
-        n = 1000000
+        n = 100000
         states = {}
         start = time.time()
         for i in range(n):

@@ -72,16 +72,16 @@ class GUI:
     def load_images(self):
         images = [] 
         
-        images.append(pygame.image.load('sushigo/Card_Images/Tempura.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Sashimi.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Dumbling.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/1xMaki Roll.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/2xMaki Roll.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/3xMaki Roll.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Salmon Nigiri.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Squid Nigiri.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Egg Nigiri.png'))
-        images.append(pygame.image.load('sushigo/Card_Images/Wasabi.png'))
+        images.append(pygame.image.load('Card_Images/Tempura.png'))
+        images.append(pygame.image.load('Card_Images/Sashimi.png'))
+        images.append(pygame.image.load('Card_Images/Dumbling.png'))
+        images.append(pygame.image.load('Card_Images/1xMaki Roll.png'))
+        images.append(pygame.image.load('Card_Images/2xMaki Roll.png'))
+        images.append(pygame.image.load('Card_Images/3xMaki Roll.png'))
+        images.append(pygame.image.load('Card_Images/Salmon Nigiri.png'))
+        images.append(pygame.image.load('Card_Images/Squid Nigiri.png'))
+        images.append(pygame.image.load('Card_Images/Egg Nigiri.png'))
+        images.append(pygame.image.load('Card_Images/Wasabi.png'))
         
         return images
 
